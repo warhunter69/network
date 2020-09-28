@@ -1,0 +1,24 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+    TODO
+    {% if user.is_authenticated %}
+    <div id="Newpost_view">
+        <h3>New post</h3>
+        <form id="Newpost_form">
+            {% csrf_token %}
+            <textarea class="form-control" id="compose-body" placeholder="Body"></textarea>
+            <input type="submit" class="btn btn-primary"/>
+        </form>
+    </div>
+    {% endif %}
+    <div id="profile_view">
+    </div>
+    <div id="posts_view">
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/index.js' %}"></script>
+{% endblock %}
