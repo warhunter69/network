@@ -10,40 +10,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function Allposts(){
  //console.log(mailbox);
- fetch('/allposts')
- .then(response => response.json())
- .then(posts => {
-    
- 
-     // ... do something else with emails ...
-     
-     
-     for (i = 0; i < posts.length; i++) {
-       var Adiv = document.createElement('div');
-       var div = document.createElement('div');
-       var h5 =  document.createElement('H5');
-       h5.innerHTML = `${posts[i]['user']}`;
-       div.innerHTML = `<br> ${posts[i]['timestamp']} <br> <p>${posts[i]['content']}</p> `
+  fetch('/allposts')
+  .then(response => response.json())
+  .then(posts => {
+      
+  
+      // ... do something else with emails ...
+      
+      
+      for (i = 0; i < posts.length; i++) {
+        var Adiv = document.createElement('div');
+        var div = document.createElement('div');
+        var h5 =  document.createElement('H5');
+        h5.innerHTML = `${posts[i]['user']}`;
+        div.innerHTML = `<br> ${posts[i]['timestamp']} <br> <p>${posts[i]['content']}</p> `
 
-       Adiv.style.border = "thin solid black";
-       Adiv.style.padding = "0px 0px 0px 5px";
-       Adiv.style.margin = "50px";
+        Adiv.style.border = "thin solid black";
+        Adiv.style.padding = "0px 0px 0px 5px";
+        Adiv.style.margin = "50px";
+        
+        Adiv.setAttribute("id", posts[i]['id']);
+        
+        const username = posts[i]['user'];
+        //  const id = posts[i]['id']
+        
+        h5.addEventListener('click', ()=>{
+          profile(username);
+        });
+        Adiv.append(h5);
+        Adiv.append(div);
+        
+        document.querySelector('#posts_view').append(Adiv);
+      }
       
-       Adiv.setAttribute("id", posts[i]['id']);
-       
-       const username = posts[i]['user'];
-      //  const id = posts[i]['id']
-       
-       h5.addEventListener('click', ()=>{
-         profile(username);
-       });
-       Adiv.append(h5);
-       Adiv.append(div);
-      
-       document.querySelector('#posts_view').append(Adiv);
-     }
-     
- });
+  });
 
 
 
@@ -85,5 +85,16 @@ function profile(username){
   document.querySelector('#Newpost_view').style.display = 'none';
 
   console.log(username)
+  fetch(`/profile/${username}`)
+  .then(response => response.json())
+  .then(user => {
 
+    var div = document.createElement('div')
+    div.style.margin = "50px";
+    div.innerHTML = `<br> <h3>${user['username']}</h3> <br> ${user['email']} <br>data joined: ${user['date_joined']} <br>following: ${user['following'].length} followers: ${user['followers']}`
+    console.log(user)
+    document.querySelector('#profile_view').append(div);
+  });
+
+//buttons
 }

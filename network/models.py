@@ -3,16 +3,15 @@ from django.db import models
 
 class User(AbstractUser):
     following = models.ManyToManyField("self" ,related_name="followers")
-
+    followers_count = models.IntegerField(default=0)
     def serialize(self):
         return {
             "id": self.id,
             "username": self.username,
             "email": self.email,
             "date_joined": self.date_joined.strftime("%b %d %Y, %I:%M %p"),
-            "following" : self.following,
-            "followers" : self.followers,
-           
+            "following" : [user.username for user in self.following.all()],
+            "followers" : self.followers_count,
            
         }
     

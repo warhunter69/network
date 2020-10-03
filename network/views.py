@@ -101,16 +101,22 @@ def Allposts(request):
 
 @csrf_exempt
 @login_required
-def profile(request, username):
+def profile(request, name):
 
     # Query for requested email
     try:
-        user = User.objects.get(username=username)
+        user = User.objects.get(username=name)
     except User.DoesNotExist:
         return JsonResponse({"error": "User does not exist."}, status=404)
-
+    print("hi")
     # Return email contents
     if request.method == "GET":
+        # user.followers_count = 0
+        # user.save()
+        # print(user.followers_count)
+        # x = user.serialize()
+        # print(x['followers'])
+      
         return JsonResponse(user.serialize())
 
     # # Update whether email is read or should be archived

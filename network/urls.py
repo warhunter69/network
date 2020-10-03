@@ -12,4 +12,5 @@ urlpatterns = [
     # API Routes
     path("addpost", views.Newpost, name="Newpost"),
     path("allposts", views.Allposts, name="Allposts"),
+    path("profile/<str:name>", views.profile, name="profile"),
 ]
