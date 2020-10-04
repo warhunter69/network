@@ -111,12 +111,14 @@ def profile(request, name):
     print("hi")
     # Return email contents
     if request.method == "GET":
-        # user.followers_count = 0
+        # print(user.following_count)
+        # user.following_count = 0
         # user.save()
         # print(user.followers_count)
         # x = user.serialize()
         # print(x['followers'])
-      
+        #B = user.followers.all()
+        #print(len(B))
         return JsonResponse(user.serialize())
 
     # # Update whether email is read or should be archived

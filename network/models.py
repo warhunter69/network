@@ -1,20 +1,25 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.db.models import Count
 class User(AbstractUser):
-    following = models.ManyToManyField("self" ,related_name="followers")
+    # following = models.ManyToManyField("self" ,related_name="followers")
     followers_count = models.IntegerField(default=0)
+    following_count = models.IntegerField(default=0)
+
     def serialize(self):
         return {
             "id": self.id,
             "username": self.username,
             "email": self.email,
             "date_joined": self.date_joined.strftime("%b %d %Y, %I:%M %p"),
-            "following" : [user.username for user in self.following.all()],
+            "following" : self.following_count,
             "followers" : self.followers_count,
            
         }
     
+
+class follow(models.Model):
+    following = models.ManyToManyField(User ,related_name="followers")
 
 
 class Post(models.Model):

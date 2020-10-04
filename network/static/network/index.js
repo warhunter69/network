@@ -91,9 +91,23 @@ function profile(username){
 
     var div = document.createElement('div')
     div.style.margin = "50px";
-    div.innerHTML = `<br> <h3>${user['username']}</h3> <br> ${user['email']} <br>data joined: ${user['date_joined']} <br>following: ${user['following'].length} followers: ${user['followers']}`
+    div.innerHTML = `<br> <h3>${user['username']}</h3> <br> ${user['email']} <br>data joined: ${user['date_joined']} <br>following: ${user['following']} followers: ${user['followers']}`
     console.log(user)
+    const but = document.createElement('BUTTON');
+    but.className = "btn btn-sm btn-outline-primary";
+    but.style.margin = "1px";
+    but.textContent = 'Follow';
+    
     document.querySelector('#profile_view').append(div);
+    document.querySelector('#profile_view').append(but);
+    console.log(document.querySelector('#username').textContent)
+    but.addEventListener('click', ()=>{
+    
+        
+    
+    console.log("hello")
+        
+    });
   });
 
 //buttons
