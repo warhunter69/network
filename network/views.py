@@ -8,7 +8,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import User , Post
+from .models import *
 
 
 def index(request):
@@ -91,7 +91,6 @@ def Newpost(request):
 
     return JsonResponse({"message": "Post saved."}, status=201)
 
-@login_required
 def Allposts(request):
     posts = Post.objects.all()
     
@@ -99,40 +98,142 @@ def Allposts(request):
     
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
-@csrf_exempt
-@login_required
+def userposts(request,name):
+    u = User.objects.get(username=name)
+    posts = Post.objects.filter(user=u)
+    posts = posts.order_by("-timestamp").all()
+    
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+
+
 def profile(request, name):
 
-    # Query for requested email
-    try:
-        user = User.objects.get(username=name)
-    except User.DoesNotExist:
-        return JsonResponse({"error": "User does not exist."}, status=404)
-    print("hi")
-    # Return email contents
-    if request.method == "GET":
-        # print(user.following_count)
-        # user.following_count = 0
-        # user.save()
-        # print(user.followers_count)
-        # x = user.serialize()
-        # print(x['followers'])
-        #B = user.followers.all()
-        #print(len(B))
-        return JsonResponse(user.serialize())
+    if request.method == "POST":
+        prf = User.objects.get(username=name)
+        user = User.objects.get(username=request.user.username)
+        print("e")
+        if(user in prf.followers.all()):
+            prf.followers.remove(user)
+        else:
+           
+            prf.followers.add(user)
+            
+        print(len(prf.followers.all()))
+        prf.followers_count = len(prf.followers.all())
+        user.following_count = len(user.following.all())
+        prf.save()
+        user.save()
+        
 
-    # # Update whether email is read or should be archived
-    # elif request.method == "PUT":
-    #     data = json.loads(request.body)
-    #     if data.get("read") is not None:
-    #         email.read = data["read"]
-    #     if data.get("archived") is not None:
-    #         email.archived = data["archived"]
-    #     email.save()
-    #     return HttpResponse(status=204)
+        return HttpResponseRedirect(reverse("profile",args=(name,)))
+
+
+
+    prf = User.objects.get(username=name)
+    msg = ""
+    
+    if request.user.is_authenticated:
+        #print(request.user.username)
+        user = User.objects.get(username=request.user.username)
+        if(user.username != prf.username):
+            #print(user.username,prf.username)
+            if(user in prf.followers.all()):
+                msg = "unfollow"
+            else:
+                msg = "follow"
+                #prf.followers.add(user)
+        
+
+    #print(user.username)
+    #  if l in u.watching.all():
+    #         u.watching.remove(l)
+    #         #print("wat")
+    #     else:
+    #         #print("woo")
+    #         u.watching.add(l)
+    #if 
+
+    return render(request, "network/profile.html",{
+        "prf" : prf,
+        "msg" : msg,
+
+    })
+
+@csrf_exempt
+@login_required
+def like(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    postid = data.get("postid", "")
+    post = Post.objects.get(id=postid)
+    user = request.user
+    print(post.serialize())
+
+    if(user in post.like.all()):
+        post.like.remove(user)
+        post.likes_count = len(post.like.all())
+        print("hi")
+        post.save()
+        return JsonResponse({"message": "post disliked."}, status=201)
+    else:
+        post.like.add(user)
+        post.likes_count = len(post.like.all())
+        print("hi")
+        post.save()
+        return JsonResponse({"message": "post liked."}, status=201)
+    #print(request.user.username)
+    #print(data)
+   
+    #print(postid)
+    
+
+
+# def userposts(request,name):
+#     u = User.objects.get(username=name)
+#     posts = Post.objects.filter(user=u)
+#     posts = posts.order_by("-timestamp").all()
+    
+#     return JsonResponse([post.serialize() for post in posts], safe=False)
+
+def FollowingPost(request):
+    user = request.user
+    fp = Post.objects.none()
+
+    u = user.following
+    for i in u.iterator():
+        print("=",i.username)
+        posts = Post.objects.filter(user=i)
+        fp =  posts | fp
+    fp = fp.order_by("-timestamp").all()
+    
+    return JsonResponse([post.serialize() for post in fp], safe=False)
+
+
+def FollowingPage(request):
+    return render(request, "network/following.html")
+
+
+@csrf_exempt
+@login_required
+def edit(request, post_id):
+      # Query for requested post
+    try:
+        post = Post.objects.get(user=request.user, pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+    
+    # Update post
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        
+        if data.get("content") is not None:
+            post.content = data["content"]
+        post.save()
+        return HttpResponse(status=204)
 
     # Email must be via GET or PUT
     else:
         return JsonResponse({
-            "error": "GET or PUT request required."
+            "error": " PUT request required."
         }, status=400)
