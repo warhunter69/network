@@ -7,12 +7,24 @@ from django.contrib.auth.decorators import login_required
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.paginator import Paginator
 from .models import *
 
 
 def index(request):
-    return render(request, "network/index.html")
+    posts = Post.objects.all()
+    posts = posts.order_by("-timestamp").all()
+    paginator = Paginator(posts, 10) 
+    page_number = request.GET.get('page')
+    #page_number = 2
+    page_obj = paginator.get_page(page_number)
+    
+    print(page_number)
+    print(page_obj)
+    return render(request, "network/index.html", {
+                "posts": page_obj,
+            })
+    
 
 
 def login_view(request):
@@ -91,19 +103,27 @@ def Newpost(request):
 
     return JsonResponse({"message": "Post saved."}, status=201)
 
-def Allposts(request):
-    posts = Post.objects.all()
-    
-    posts = posts.order_by("-timestamp").all()
-    
-    return JsonResponse([post.serialize() for post in posts], safe=False)
 
-def userposts(request,name):
-    u = User.objects.get(username=name)
-    posts = Post.objects.filter(user=u)
-    posts = posts.order_by("-timestamp").all()
+# def Allposts(request,pagenum):
+
+#     posts = Post.objects.all()
+#     posts = posts.order_by("-timestamp").all()
+#     paginator = Paginator(posts, 10) 
+#     #page_number = request.GET.get('page')
+#     #page_number = 2
+#     page_obj = paginator.get_page(pagenum)
+#     print(page_obj)
+#     return render(request, "network/index.html", {
+#                 "posts": page_obj,
+#             })
+
+
+# def userposts(request,name):
+#     u = User.objects.get(username=name)
+#     posts = Post.objects.filter(user=u)
+#     posts = posts.order_by("-timestamp").all()
     
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+#     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
 def profile(request, name):
@@ -111,26 +131,31 @@ def profile(request, name):
     if request.method == "POST":
         prf = User.objects.get(username=name)
         user = User.objects.get(username=request.user.username)
-        print("e")
         if(user in prf.followers.all()):
             prf.followers.remove(user)
         else:
            
             prf.followers.add(user)
             
-        print(len(prf.followers.all()))
         prf.followers_count = len(prf.followers.all())
         user.following_count = len(user.following.all())
         prf.save()
         user.save()
         
-
+        
         return HttpResponseRedirect(reverse("profile",args=(name,)))
 
-
-
-    prf = User.objects.get(username=name)
+    
+    
     msg = ""
+    prf = User.objects.get(username=name)
+    posts = Post.objects.filter(user=prf)
+    posts = posts.order_by("-timestamp").all()
+    
+    paginator = Paginator(posts, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     
     if request.user.is_authenticated:
         #print(request.user.username)
@@ -141,21 +166,13 @@ def profile(request, name):
                 msg = "unfollow"
             else:
                 msg = "follow"
-                #prf.followers.add(user)
-        
+   
 
-    #print(user.username)
-    #  if l in u.watching.all():
-    #         u.watching.remove(l)
-    #         #print("wat")
-    #     else:
-    #         #print("woo")
-    #         u.watching.add(l)
-    #if 
 
     return render(request, "network/profile.html",{
         "prf" : prf,
         "msg" : msg,
+        "posts": page_obj,
 
     })
 
@@ -181,6 +198,7 @@ def like(request):
         post.likes_count = len(post.like.all())
         print("hi")
         post.save()
+        
         return JsonResponse({"message": "post liked."}, status=201)
     #print(request.user.username)
     #print(data)
@@ -189,14 +207,12 @@ def like(request):
     
 
 
-# def userposts(request,name):
-#     u = User.objects.get(username=name)
-#     posts = Post.objects.filter(user=u)
-#     posts = posts.order_by("-timestamp").all()
-    
-#     return JsonResponse([post.serialize() for post in posts], safe=False)
 
-def FollowingPost(request):
+
+
+
+@login_required
+def FollowingPage(request):
     user = request.user
     fp = Post.objects.none()
 
@@ -205,13 +221,18 @@ def FollowingPost(request):
         print("=",i.username)
         posts = Post.objects.filter(user=i)
         fp =  posts | fp
-    fp = fp.order_by("-timestamp").all()
+    posts = fp.order_by("-timestamp").all()
+    paginator = Paginator(posts, 10) 
+    page_number = request.GET.get('page')
+    #page_number = 2
+    page_obj = paginator.get_page(page_number)
     
-    return JsonResponse([post.serialize() for post in fp], safe=False)
-
-
-def FollowingPage(request):
-    return render(request, "network/following.html")
+    
+    return render(request, "network/following.html", {
+                "posts": page_obj,
+            })
+    
+    #return render(request, "network/following.html")
 
 
 @csrf_exempt

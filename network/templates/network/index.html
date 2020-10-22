@@ -4,20 +4,72 @@
 {% block body %}
     
     {% if user.is_authenticated %}
-    <div class="margin" id="Newpost_view">
+
+    <div class="card-header profile_div" id="Newpost_view">
         <h3 >New post</h3>
-        <form id="Newpost_form">
+        <form id="Newpost_form" onsubmit="Newpost()">
             {% csrf_token %}
             <textarea class="form-control" id="compose-body" placeholder="Body"></textarea>
             <input type="submit" class="btn btn-primary"/>
         </form>
     </div>
     {% endif %}
-    <div id="profile_view">
     
+    <div class="card-header" id="posts_view">
+    <div >
+     <h3 class="profile_div">All posts</h3>
     </div>
-    <div id="posts_view">
+    <div >
+    <ul class="ul">
+        {% for post in posts %}
+        <li  class="padd">
+            
+            <div id="id{{post.id}}" class="card">
+                <h5 class="card-header"><a href="{% url 'profile' post.user.username %}">{{post.user.username}}</a></h5>
+                <div class="card-body ">
+                <div>{{post.timestamp}}<br></div>
+                <div id="content{{post.id}}"><p class="card-text blockquote mb-0">{{post.content}}</p></div>
+                <div id="LC{{post.id}}">likes: {{post.like.count}}</div>
+                {% if user.is_authenticated %}
+                {% if user in post.like.all %}
+                <div><button id="LB{{post.id}}" class="btn btn-primary" type="button" onclick="like({{post.id}})">unlike</button></div>
+                {% else %}
+                <div><button id="LB{{post.id}}" class="btn btn-primary" type="button" onclick="like({{post.id}})">like</button></div>
+                {% endif %}
+                {% if user == post.user %}
+                <div><button class="btn btn-primary" type="button" onclick="edit({{post.id}})">edit</button></div>
+                {% endif %}
+                {% endif %}
+                </div>
+            </div>
+        </li>
+           
+        {% endfor %}
+    </ul>
     </div>
+    <div>
+   <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            {% if posts.has_previous %}
+               <li class="page-item"> <a class="page-link" href="?page=1">&laquo; first</a></li>
+               <li class="page-item"> <a class="page-link" href="?page={{ posts.previous_page_number }}">previous</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">{{ posts.previous_page_number  }}</a></li>
+
+            {% endif %}
+
+           
+            <li class="page-item"> <a  class="page-link" href="#">Page {{ posts.number }} of {{ posts.paginator.num_pages }}</a></li>
+            
+
+            {% if posts.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">{{ posts.next_page_number }}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">next</a></li>
+            <li class="page-item"> <a class="page-link" href="?page={{ posts.paginator.num_pages }}">last &raquo;</a></li>
+            {% endif %}
+         </ul>
+    </nav>
+    </div>
+    
 {% endblock %}
 
 {% block script %}

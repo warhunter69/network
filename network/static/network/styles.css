@@ -1,7 +1,20 @@
 .profile_div{
-    margin: 30px;
+   
+    text-align: center;
 }
 
 .margin{
-    margin: 50px;
+    margin: 0px;
+}
+.padd{
+    padding-bottom: 5px;
+}
+
+.border{
+    border-style:"thin solid black";
+}
+.ul{
+    margin: 0; /* To remove default bottom margin */ 
+    padding: 0; /* To remove default left padding */
+    list-style-type: none;
 }

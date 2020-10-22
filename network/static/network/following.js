@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
    
-    Allposts();
+    //Allposts();
       
     });
 function Allposts(){
